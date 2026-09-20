@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    header {
+      position: sticky;
+      top: 0;
+      margin-bottom: 10px;
+      margin-top: -10px;
+      z-index: 2;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 p-6 font-sans">
+  {% if not readonly %}
+  {% include "Header.html" %}
+  {% endif %}
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">User Profile</h1>
+        <p class="text-gray-500">View and manage your profile information</p>
+      </div>
+      {% if not readonly %}
+      <a href="{% url 'edit_profile' %}"
+        class="inline-flex items-center px-4 py-2 border rounded text-sm font-medium bg-white hover:bg-gray-100 text-blue-600 border-blue-300">
+        Edit Profile
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white shadow rounded-lg p-6 space-y-4">
+      <div class="flex items-center space-x-4">
+        <div
+          class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-500">
+          {{ user.first_name.0 }}{{ user.last_name.0 }}
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold">{{ user.get_full_name }}</h2>
+          <p class="text-gray-500">{{ user.email }}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-gray-400">Username</p>
+          <p class="font-medium">{{ user.username }}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Phone</p>
+          <p class="font-medium">{{ user.profile.phone }}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Address</p>
+          <p class="font-medium">{{ user.profile.address }}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Joined</p>
+          <p class="font-medium">{{ user.date_joined|date:"F j, Y" }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Section -->
+    {% if not user.is_staff %}
+    <div class="bg-white shadow rounded-lg p-6">
+      <h3 class="text-lg font-semibold mb-4">Your Crime Report Analytics</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
+        <div class="p-4 border rounded-lg bg-blue-50">
+          <p class="text-3xl font-bold text-blue-600">{{ analytics.total }}</p>
+          <p class="text-gray-500 mt-1 text-sm">Total Reports Submitted</p>
+        </div>
+        <div class="p-4 border rounded-lg bg-yellow-50">
+          <p class="text-3xl font-bold text-yellow-600">{{ analytics.pending }}</p>
+          <p class="text-gray-500 mt-1 text-sm">Pending Reports</p>
+        </div>
+        <div class="p-4 border rounded-lg bg-green-50">
+          <p class="text-3xl font-bold text-green-600">{{ analytics.resolved }}</p>
+          <p class="text-gray-500 mt-1 text-sm">Resolved Reports</p>
+        </div>
+        <div class="p-4 border rounded-lg bg-red-50">
+          <p class="text-3xl font-bold text-red-600">{{ analytics.critical }}</p>
+          <p class="text-gray-500 mt-1 text-sm">Critical Priority</p>
+        </div>
+        <div class="p-4 border rounded-lg bg-purple-50">
+          <p class="text-3xl font-bold text-purple-600">{{ analytics.under_investigation }}</p>
+          <p class="text-gray-500 mt-1 text-sm">Under Investigation</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if messages %}
+  <div id="message-container" class="fixed bottom-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="message-popup px-4 py-3 rounded shadow-lg text-white transition-all duration-500
+      {% if message.tags == 'error' %}
+        bg-red-500
+      {% elif message.tags == 'success' %}
+        bg-green-500
+      {% elif message.tags == 'warning' %}
+        bg-yellow-500 text-gray-900
+      {% else %}
+        bg-blue-500
+      {% endif %}
+    ">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <script>
+    setTimeout(() => {
+      const messageContainer = document.getElementById("message-container");
+      if (messageContainer) {
+        messageContainer.classList.add("opacity-0", "translate-y-4");
+        setTimeout(() => messageContainer.remove(), 500);
+      }
+    }, 3000);
+  </script>
+</body>
+
+</html>

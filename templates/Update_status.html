@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Update Crime Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50 text-gray-800 p-6">
+
+  <div class="max-w-4xl mx-auto">
+    <div class="border rounded-lg bg-white shadow p-6">
+      <h2 class="text-xl font-bold mb-4">Update Crime Report</h2>
+
+      <form action="{% url 'update_report' report.id %}" method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Report ID (readonly) -->
+        <div>
+          <label for="reportId" class="block text-sm font-medium text-gray-700">Report ID</label>
+          <input type="text" id="reportId" readonly value="{{ report.id }}"
+                 class="mt-1 block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-sm" />
+        </div>
+
+        <!-- Admin Notes -->
+        <div>
+          <label for="adminNotes" class="block text-sm font-medium text-gray-700">Message to Citizen</label>
+          <textarea id="adminNotes" name="adminNotes" rows="4" placeholder="Describe the current situation..."
+                    class="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm">{{ report.admin_notes }}</textarea>
+        </div>
+
+        <!-- Update Status -->
+        <div>
+          <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+          <select id="status" name="status"
+                  class="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm">
+            <option value="Pending" {% if report.status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="Under Investigation" {% if report.status == 'Under Investigation' %}selected{% endif %}>Under Investigation</option>
+            <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+            <option value="Rejected" {% if report.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-between pt-4 border-t mt-6">
+          <a href="{% url 'admin_dashboard' %}"
+             class="border px-4 py-2 rounded text-sm bg-gray-100 hover:bg-gray-200">Cancel</a>
+          <button type="submit"
+                  class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Update Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifications Script -->
+  <script>
+    function toggleNotifications() {
+      const dropdown = document.getElementById("notificationDropdown");
+      dropdown.classList.toggle("hidden");
+      if (!dropdown.classList.contains("hidden")) {
+        loadNotifications();
+      }
+    }
+
+    function loadNotifications() {
+      fetch('/notifications/')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("notif-list");
+          const badge = document.getElementById("notif-count");
+          list.innerHTML = '';
+          let unread = 0;
+
+          if (data.notifications.length === 0) {
+            list.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+          }
+
+          data.notifications.forEach(n => {
+            const div = document.createElement('div');
+            div.className = `p-3 cursor-pointer hover:bg-gray-100 ${!n.is_read ? 'font-semibold' : ''}`;
+            div.innerHTML = `
+              <div class="text-sm">${n.title}</div>
+              <div class="text-xs text-gray-500">${n.message}</div>
+              <div class="text-[10px] text-gray-400 mt-1">${n.date}</div>
+            `;
+            div.onclick = () => markRead(n.id);
+            list.appendChild(div);
+            if (!n.is_read) unread++;
+          });
+
+          if (unread > 0) {
+            badge.textContent = unread;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        });
+    }
+
+    function markRead(id) {
+      fetch(`/notifications/read/${id}/`)
+        .then(() => loadNotifications());
+    }
+
+    function markAllRead() {
+      fetch(`/notifications/all-read/`)
+        .then(() => loadNotifications());
+    }
+
+    // Auto-refresh badge every 30s
+    setInterval(() => {
+      fetch('/notifications/')
+        .then(res => res.json())
+        .then(data => {
+          const badge = document.getElementById("notif-count");
+          if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        });
+    }, 30000);
+
+    // On page load
+    window.addEventListener("DOMContentLoaded", () => {
+      fetch('/notifications/')
+        .then(res => res.json())
+        .then(data => {
+          const badge = document.getElementById("notif-count");
+          if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.classList.remove('hidden');
+          }
+        });
+    });
+  </script>
+
+</body>
+</html>

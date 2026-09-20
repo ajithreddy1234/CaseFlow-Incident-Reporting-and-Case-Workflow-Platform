@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report a Crime</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <style>
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body class="bg-gray-50 p-6">
+  <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="p-6 border-b">
+      <h1 class="text-2xl font-semibold">Report a Crime</h1>
+      <p class="text-gray-600">Please provide as much detail as possible about the incident</p>
+    </div>
+
+    <form class="p-6 space-y-6" action="{% url 'report_crime' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left side -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Type of Crime</label>
+            <select name="typeofCrime" required class="w-full border rounded p-2">
+              <option value="">Select crime type</option>
+              <option value="Theft">Theft</option>
+              <option value="Kidnapping">Kidnapping</option>
+              <option value="Rape">Rape</option>
+              <option value="Murder">Murder</option>
+              <option value="Assault">Assault</option>
+              <option value="Human Trafficking">Human Trafficking</option>
+              <option value="Dowry">Dowry</option>
+              <option value="Public Nuisance">Public Nuisance</option>
+              <option value="Corruption">Corruption</option>
+              <option value="Domestic Violence">Domestic Violence</option>
+              <option value="Sexual Harassment">Sexual Harassment</option>
+              <option value="Missing">Missing</option>
+              <option value="Child Marriage">Child Marriage</option>
+              <option value="Illegal Encroachment of Land">Illegal Encroachment of Land</option>
+              <option value="Noise Complaint">Noise Complaint</option>
+              <option value="Drug Trafficking / Smuggling">Drug Trafficking / Smuggling</option>
+              <option value="Other">Other</option>
+
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Description</label>
+            <textarea rows="5" required class="w-full border rounded p-2" name="description"
+              placeholder="Describe what happened in detail"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1">Severity Level (3)</label>
+            <div class="flex items-center gap-2">
+              <span class="text-xs">Low</span>
+              <input type="range" min="1" max="5" value="3" class="flex-1" name="priority" />
+              <span class="text-xs">High</span>
+            </div>
+            <div class="text-yellow-600 text-xs flex items-center mt-1">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              High severity reports will be prioritized
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Date</label>
+              <input type="date" class="w-full border rounded p-2" name="incident_date" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Time</label>
+              <input type="time" class="w-full border rounded p-2" name="incident_time" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1 flex items-center gap-1">📍 Location</label>
+            <div class="h-52 border rounded mb-2 bg-gray-100 flex items-center justify-center text-sm text-gray-400">
+              <div id="map"></div>
+              <!-- [Map Placeholder] -->
+            </div>
+            <input type="text" id="address" class="w-full border rounded p-2" placeholder="Address" name="location"
+              required />
+            <input type="hidden" id="latitude" name="latitude" />
+            <input type="hidden" id="longitude" name="longitude" />
+            <p class="text-xs text-gray-500 mt-1">Drag the pin or click on the map to select location</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1 flex items-center gap-1">📷 Evidence Photos (optional)</label>
+            <input id="evidenceInput" type="file" name="evidence_photos" class="w-full border rounded p-2 mb-2"
+              accept="image/*" multiple />
+            <p class="text-xs text-gray-500 mb-2">Upload up to 3 images (Max 5MB each)</p>
+            <div id="previewContainer" class="flex gap-2 flex-wrap"></div>
+          </div>
+
+          <!-- Audio Evidence -->
+          <div>
+            <label class="block text-sm font-medium mb-1 flex items-center gap-1">🎙️ Audio Evidence (optional)</label>
+            <input type="file" name="evidence_audio" class="w-full border rounded p-2 mb-2" accept="audio/*" multiple />
+            <p class="text-xs text-gray-500 mb-2">Upload audio recordings (e.g., voice reports)</p>
+          </div>
+
+          <!-- Video Evidence -->
+          <div>
+            <label class="block text-sm font-medium mb-1 flex items-center gap-1">📹 Video Evidence (optional)</label>
+            <input type="file" name="evidence_video" class="w-full border rounded p-2 mb-2" accept="video/*" multiple />
+            <p class="text-xs text-gray-500 mb-2">Upload videos (Max 50MB each)</p>
+          </div>
+
+        </div>
+      </div>
+
+      {% if messages %}
+      {% for message in messages %}
+      <div class="text-sm text-{{ message.tags }}-600">{{ message }}</div>
+      {% endfor %}
+      {% endif %}
+
+      <div class="pt-6">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+          Submit Crime Report
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let map;
+    let userMarker;
+    let pinMarker;
+
+    function initMap(lat, lng) {
+      map = L.map('map').setView([lat, lng], 16);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      userMarker = L.marker([lat, lng]).addTo(map)
+        .bindPopup("You are here!")
+        .openPopup();
+
+      map.on('click', function (e) {
+        const clickedLat = e.latlng.lat;
+        const clickedLng = e.latlng.lng;
+        document.getElementById("latitude").value = clickedLat;
+        document.getElementById("longitude").value = clickedLng;
+        if (pinMarker) {
+          map.removeLayer(pinMarker);
+        }
+
+        pinMarker = L.marker([clickedLat, clickedLng]).addTo(map)
+          .bindPopup("Pinned location")
+          .openPopup();
+
+        getAddress(clickedLat, clickedLng);
+      });
+    }
+
+    async function getAddress(lat, lng) {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'LeafletMapDemo/1.0'
+          }
+        });
+        const data = await response.json();
+        document.getElementById("address").value = data.display_name;
+
+      } catch (error) {
+        console.error("Error fetching address:", error);
+      }
+    }
+
+    function getLocation() {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          initMap(lat, lng);
+          document.getElementById("latitude").value = lat;
+          document.getElementById("longitude").value = lng;
+
+        },
+        function (error) {
+          if (error.code === error.TIMEOUT) {
+            console.warn("High-accuracy timed out. Retrying with lower accuracy...");
+            navigator.geolocation.getCurrentPosition(
+              function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                initMap(lat, lng);
+                document.getElementById("latitude").value = lat;
+                document.getElementById("longitude").value = lng;
+              },
+              function (fallbackError) {
+                alert("Fallback failed: " + fallbackError.message);
+              },
+              {
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 60000
+              }
+            );
+          } else {
+            alert("Error getting location: " + error.message);
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    getLocation();
+  </script>
+
+  <!-- Image Preview Script -->
+  <script>
+    const input = document.getElementById('evidenceInput');
+    const preview = document.getElementById('previewContainer');
+
+    input.addEventListener('change', () => {
+      preview.innerHTML = ''; // Clear old previews
+
+      const files = Array.from(input.files).slice(0, 3); // Limit to 3
+
+      files.forEach((file, index) => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.className = 'relative';
+
+          div.innerHTML = `
+            <img src="${e.target.result}" class="h-16 w-16 object-cover rounded-md" />
+            <button type="button" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs remove-btn" data-index="${index}">×</button>
+          `;
+
+          preview.appendChild(div);
+        };
+
+        reader.readAsDataURL(file);
+      });
+    });
+
+    // Optional: remove preview (note this doesn't update the input files due to browser limitation)
+    preview.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-btn')) {
+        e.target.parentElement.remove();
+      }
+    });
+  </script>
+
+</body>
+
+</html>

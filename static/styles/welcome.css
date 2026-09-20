@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+*{
+    padding: 0;
+    margin: 0;
+}
+html{
+    font-family: "Inter", serif;
+    scroll-behavior: smooth;
+}
+body{
+    font-family: 'Rubik', sans-serif;
+    background-color: #efeef6;
+}
+.main{
+    margin-top: 30px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+.main .sub{
+    max-width: 100%;
+    width: 50%;
+    height: 80vh;
+    display: flex;
+}
+.login{
+    justify-content: center;
+    align-items: center;
+}
+.login .login-container .subset{
+    margin-bottom: 100px;
+}
+.login .login-container button{
+    background-color: transparent;
+    border: 2px solid rgb(167, 49, 49);
+    padding: 5px;
+    border-radius: 20px;
+    color:rgb(167, 49, 49);
+    margin: 5px;
+    cursor: pointer;
+}
+
+@media (max-width:600px){
+    .main{
+        flex-wrap: nowrap;
+        flex-direction: column;
+    }
+    .main .sub{
+        width: 80%;
+        height: 60vh;
+        margin-bottom: 50px;
+    }
+}

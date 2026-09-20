@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+
+body{
+  background-color: #efeef6;
+  backdrop-filter: blur(3px);
+  padding:0;
+  margin:0;
+  font-family: 'Rubik', sans-serif;
+}
+header div{
+  height: 70px;
+  background-color: white;
+  width:100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+}
+header div div h1{
+  display: inline;
+  height: 40px;
+  width:40px;
+  margin-left:10px;
+  justify-self: left;
+  color: #ff8a05;
+}
+header div div h2{
+  margin-left:-30px;
+  display: inline;
+}
+.content{
+  margin-top: 50px;
+}
+form{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  justify-content: space-around;
+}
+.content .entry_widget form .text_field{
+  width:80%;
+  height:40px;
+  border-radius:10px;
+  border:0;
+}
+.content .entry_widget form .submit{
+  background: linear-gradient(135deg,#fabe7d,#ff8a05);
+  color:white;
+  margin: 0;
+  border:0;
+  border-radius:10px;
+  box-shadow: #ff8a05 3px 3px 19px;
+  height:45px;
+  width:45px;
+}
+.data{
+  margin-top:50px;
+}
+.txt{
+  margin-left: 20px;
+  width:70%;
+}
+.val form{
+  
+  min-height: 50px;
+  background-color: white;
+  width:100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: row;
+  border-bottom:1px #f2f2f2 solid;
+}
+.del_btn{
+  background-color: white;
+  border:2px #f2543f solid;
+  color:#f2543f;
+  border-radius: 5px;
+}

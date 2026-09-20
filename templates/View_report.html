@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 p-6">
+    <div class="max-w-5xl mx-auto">
+        <!-- Report Details Section -->
+        <div class="border rounded-lg bg-white shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Report Details</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-lg">{{ report.typeofCrime }}</h3>
+                    <div class="flex gap-2 mt-1">
+                        {% if report.status == "Pending" %}
+                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Pending</span>
+                        {% elif report.status == "Under Investigation" %}
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Under Investigation</span>
+                        {% elif report.status == "Resolved" %}
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Resolved</span>
+                        {% elif report.status == "Rejected" %}
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Rejected</span>
+                        {% else %}
+                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">{{ report.status }}</span>
+                        {% endif %}
+
+                        {% if report.priority == 5 %}
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Critical Priority</span>
+                        {% elif report.priority == 4 %}
+                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">High Priority</span>
+                        {% elif report.priority == 3 %}
+                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Medium Priority</span>
+                        {% elif report.priority == 2 %}
+                        <span class="text-xs bg-green-100 text-gray-800 px-2 py-0.5 rounded">Low Priority</span>
+                        {% elif report.priority == 1 %}
+                        <span class="text-xs bg-green-100 text-gray-800 px-2 py-0.5 rounded">Very Low Priority</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-1">Description</h4>
+                        <p class="p-3 bg-gray-100 rounded text-sm">
+                            {{ report.description }}
+                        </p>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-500">
+                        <div>
+                            <h4 class="font-semibold mb-1">Date</h4>
+                            <p>{{ report.date|date:"Y-m-d" }}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-1">Time</h4>
+                            <p>{{ report.date|date:"H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-1">Severity Level</h4>
+                        <div class="flex items-center gap-1">
+                            {% for i in "12345" %}
+                            <div class="w-6 h-1.5 rounded 
+                  {% if forloop.counter <= report.priority %}
+                    bg-blue-600
+                  {% else %}
+                    bg-gray-300
+                  {% endif %}"></div>
+                            {% endfor %}
+                            <span class="text-xs ml-2">Level {{ report.priority }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-1">Message</h4>
+                        <p class="p-3 rounded text-sm">
+                            {% if not report.admin_notes %}
+                            Report not reviewed yet
+                            {% else %}
+                            {{ report.admin_notes }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if isSuperUser %}
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-1">Reported By:</h4>
+                        <div class="p-3 rounded text-sm bg-gray-100">
+                            <p class="mb-1"><strong>Name:</strong> {{ report.user.get_full_name }}</p>
+                            <p class="mb-1"><strong>Username:</strong> {{ report.user.username }}</p>
+                            <p class="mb-2"><strong>Email:</strong> {{ report.user.email }}</p>
+                            <a href="{% url 'view_user_profile' report.user.id %}"
+                                class="inline-block mt-2 px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded">
+                                View Full Profile
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-2">Location</h4>
+                    <div class="h-48 border rounded-md bg-gray-200 mb-2 flex items-center justify-center">
+                        <div id="map"></div>
+                        <!-- <span class="text-gray-500">Map Placeholder</span> -->
+                    </div>
+                    <p class="text-sm text-gray-500">{{ report.location }}</p>
+
+                    <div class="mt-4">
+                        <h4 class="font-semibold mb-2">Evidence Photos</h4>
+                        {% if evidence_photos %}
+                        <div class="grid grid-cols-3 gap-2">
+                            {% for photo in evidence_photos %}
+                            <img src="{{ photo.image.url }}" alt="Evidence Photo"
+                                class="aspect-square object-cover rounded border shadow cursor-pointer"
+                                onclick="openFullscreen(this)" />
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-sm text-gray-500">No evidence images uploaded.</p>
+                        {% endif %}
+                        <!-- Audio Evidence -->
+                        <div class="mt-6">
+                            <h4 class="font-semibold mb-2">Audio Evidence</h4>
+                            {% if evidence_audios %}
+                            <div class="space-y-3">
+                                {% for audio in evidence_audios %}
+                                <audio controls class="w-full">
+                                    <source src="{{ audio.audio.url }}" type="audio/mpeg" />
+                                    Your browser does not support the audio element.
+                                </audio>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-sm text-gray-500">No audio evidence uploaded.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Video Evidence -->
+                        <div class="mt-6">
+                            <h4 class="font-semibold mb-2">Video Evidence</h4>
+                            {% if evidence_videos %}
+                            <div class="grid grid-cols-2 gap-4">
+                                {% for video in evidence_videos %}
+                                <video controls class="rounded shadow cursor-pointer"
+                                    onclick="this.requestFullscreen()">
+                                    <source src="{{ video.video.url }}" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-sm text-gray-500">No video evidence uploaded.</p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t mt-6 flex justify-between items-center text-sm text-gray-500">
+                <span><strong>Submitted:</strong> {{ report.submitted_at|date:"Y-m-d H:i" }}</span>
+                <a href="/" class="border px-3 py-1 rounded hover:bg-gray-100">Back to Dashboard</a>
+                {% if isSuperUser %}
+                <a href="{% url 'update_report' report.id %}"
+                    class="border px-3 py-1 rounded hover:bg-blue-100 text-blue-600">Update Report</a>
+
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function openFullscreen(element) {
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) { 
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) { 
+            element.msRequestFullscreen();
+        }
+    }
+</script>
+
+<script>
+    
+    var latitude = {{ report.latitude|safe }};
+    var longitude = {{ report.longitude|safe }};
+
+
+    var map = L.map('map').setView([latitude, longitude], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+
+    L.marker([latitude, longitude]).addTo(map)
+        .bindPopup("Reported location")
+        .openPopup();
+
+
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+
+                // Add user location marker
+                L.marker([userLat, userLng]).addTo(map)
+                    .bindPopup("Your current location")
+                    .openPopup();
+            },
+            function (error) {
+                alert("Geolocation error: " + error.message);
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by your browser.");
+    }
+</script>
+
+
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Police Analytics Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    header {
+      position: sticky;
+      top: 0;
+      margin-bottom: 10px;
+      margin-top: -10px;
+      z-index: 2;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 p-6 font-sans">
+  {% include "Header.html" %}
+
+  <div class="max-w-7xl mx-auto space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold">Police Analytics Dashboard</h1>
+      <p class="text-gray-500 mt-1">Insights and statistics of reported crimes</p>
+    </div>
+
+    <!-- Stats Summary -->
+    <!-- ... [head and header unchanged] ... -->
+
+<!-- Stats Summary -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="p-4 border rounded-lg bg-blue-50 shadow">
+    <p class="text-3xl font-bold text-blue-600">{{ stats.total }}</p>
+    <p class="text-gray-600 mt-1">Total Reports</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-yellow-50 shadow">
+    <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
+    <p class="text-gray-600 mt-1">Pending</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-blue-100 shadow">
+    <p class="text-3xl font-bold text-blue-800">{{ stats.investigating }}</p>
+    <p class="text-gray-600 mt-1">Under Investigation</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-green-50 shadow">
+    <p class="text-3xl font-bold text-green-600">{{ stats.resolved }}</p>
+    <p class="text-gray-600 mt-1">Resolved</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-red-100 shadow">
+    <p class="text-3xl font-bold text-red-600">{{ stats.critical }}</p>
+    <p class="text-gray-600 mt-1">Critical Priority</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-orange-50 shadow">
+    <p class="text-3xl font-bold text-orange-600">{{ stats.high }}</p>
+    <p class="text-gray-600 mt-1">High Priority</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-yellow-100 shadow">
+    <p class="text-3xl font-bold text-yellow-700">{{ stats.medium }}</p>
+    <p class="text-gray-600 mt-1">Medium Priority</p>
+  </div>
+  <div class="p-4 border rounded-lg bg-red-200 shadow">
+    <p class="text-3xl font-bold text-red-700">{{ stats.rejected }}</p>
+    <p class="text-gray-600 mt-1">Rejected</p>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="bg-white rounded-lg shadow p-6">
+  <h2 class="text-xl font-semibold mb-4">Visual Analytics</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div>
+      <canvas id="statusChart"></canvas>
+    </div>
+    <div>
+      <canvas id="priorityChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  const statusData = [
+    {{ stats.pending }},
+    {{ stats.investigating }},
+    {{ stats.resolved }},
+    {{ stats.rejected }}
+  ];
+
+  const priorityData = [
+    {{ stats.critical }},
+    {{ stats.high }},
+    {{ stats.medium }}
+  ];
+
+  const statusCtx = document.getElementById('statusChart');
+  const priorityCtx = document.getElementById('priorityChart');
+
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Pending', 'Under Investigation', 'Resolved', 'Rejected'],
+      datasets: [{
+        data: statusData,
+        backgroundColor: ['#FACC15', '#60A5FA', '#34D399', '#F87171'],
+      }]
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Report Status Distribution',
+          font: {
+            size: 18
+          }
+        },
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  new Chart(priorityCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Critical', 'High', 'Medium'],
+      datasets: [{
+        label: 'Number of Reports',
+        data: priorityData,
+        backgroundColor: ['#EF4444', '#F97316', '#EAB308']
+      }]
+    },
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Report Priority Levels',
+          font: {
+            size: 18
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+
+</html>

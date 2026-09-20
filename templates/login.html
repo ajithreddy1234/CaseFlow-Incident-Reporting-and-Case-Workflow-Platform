@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrimeTracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function scrollToLogin() {
+      const section = document.getElementById("login-section");
+      section?.scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-gray-800">
+
+  <div class="bg-blue-50 py-16 md:py-24">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+      <div class="md:w-1/2 md:pr-12 mb-10 md:mb-0">
+        <div class="flex items-center mb-4">
+          <svg class="h-10 w-10 text-blue-600 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <h1 class="text-4xl font-bold text-blue-600">CrimeTracker</h1>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold mb-6">
+          Report Crime. Stay Safe.
+        </h2>
+        <p class="text-lg mb-8 text-gray-600">
+          A simple and effective way for citizens to report crimes, track progress, and receive alerts about incidents
+          in their area.
+        </p>
+
+      </div>
+      <div id="login-section" class="md:w-1/2 w-full">
+        <div class="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+          <div class="mb-4">
+            <h1 class="text-2xl font-bold">Login</h1>
+            <p class="text-gray-600">Access the crime reporting system with your credentials</p>
+          </div>
+
+          {% if messages %}
+          {% for message in messages %}
+          <div class="p-3 rounded mb-4 text-sm font-medium flex items-center gap-2
+      {% if message.tags == 'error' %}
+        bg-red-100 text-red-800 border border-red-300
+      {% elif message.tags == 'success' %}
+        bg-green-100 text-green-800 border border-green-300
+      {% elif message.tags == 'warning' %}
+        bg-yellow-100 text-yellow-800 border border-yellow-300
+      {% elif message.tags == 'info' %}
+        bg-blue-100 text-blue-800 border border-blue-300
+      {% else %}
+        bg-gray-100 text-gray-800 border border-gray-300
+      {% endif %}
+    ">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              {% if message.tags == 'error' %}
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              {% elif message.tags == 'success' %}
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              {% elif message.tags == 'warning' %}
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-.01-6a9 9 0 110 18 9 9 0 010-18z" />
+              {% else %}
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01" />
+              {% endif %}
+            </svg>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %}
+          {% endif %}
+
+
+
+          <form class="space-y-4" method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="space-y-2">
+              <label for="role" class="block font-medium">I am a:</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-1">
+                  <input type="radio" name="role" id="citizen" value="citizen" checked>
+                  Citizen
+                </label>
+                <label class="flex items-center gap-1">
+                  <input type="radio" name="role" id="police" value="police">
+                  IO
+                </label>
+                <label class="flex items-center gap-1">
+                  <input type="radio" name="role" id="admin" value="admin">
+                  Admin
+                </label>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label for="username" class="block font-medium">username</label>
+              <input id="username" type="username" name="username" class="w-full px-3 py-2 border rounded"
+                placeholder="Enter Username" required>
+            </div>
+
+            <div class="space-y-2">
+              <label for="password" class="block font-medium">Password</label>
+              <input id="password" type="password" name="password" class="w-full px-3 py-2 border rounded"
+                placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+              Login
+            </button>
+          </form>
+          <p class="mt-6 text-center text-sm text-gray-600">
+            Dont't have an account?
+            <a href="/register" class="text-blue-600 hover:underline">Sigup here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="py-16">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">How CrimeTracker Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <div class="bg-white rounded-lg p-6 border">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              📍
+            </div>
+            <h3 class="font-bold text-xl mb-2">Precise Location Reporting</h3>
+            <p class="text-gray-600">Easily mark the exact location of incidents with our interactive map interface.</p>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 border">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              🔔
+            </div>
+            <h3 class="font-bold text-xl mb-2">Real-time Alerts</h3>
+            <p class="text-gray-600">Get instant notifications when crimes are reported in your neighborhood.</p>
+          </div>
+
+          <div class="bg-white rounded-lg p-6 border">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              ⏱️
+            </div>
+            <h3 class="font-bold text-xl mb-2">Rapid Response</h3>
+            <p class="text-gray-600">Direct reporting to authorities ensures faster emergency response times.</p>
+          </div>
+          <div class="bg-white rounded-lg p-6 border">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              ✅
+            </div>
+            <h3 class="font-bold text-xl mb-2">Track Report Status</h3>
+            <p class="text-gray-600">Follow the progress of your report from submission to resolution.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-100 py-16">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-16">Report in Three Simple Steps</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold mb-4">
+              1</div>
+            <h3 class="font-bold text-xl mb-2">Create an Account</h3>
+            <p class="text-gray-600">Sign up with your username to access the reporting system.</p>
+          </div>
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold mb-4">
+              2</div>
+            <h3 class="font-bold text-xl mb-2">Submit a Report</h3>
+            <p class="text-gray-600">Provide details about the incident including location and photos.</p>
+          </div>
+          <div class="flex flex-col items-center text-center">
+            <div
+              class="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold mb-4">
+              3</div>
+            <h3 class="font-bold text-xl mb-2">Track Progress</h3>
+            <p class="text-gray-600">Follow your report's status as authorities investigate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</body>
+
+</html>

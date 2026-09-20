@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+
+body{
+  background-color: #efeef6;
+  backdrop-filter: blur(3px);
+  font-family: 'Rubik', sans-serif;
+}
+h2{
+  font-family: 'Rubik', sans-serif;
+  margin-top:0;
+}
+.center {
+
+display: flex;
+justify-content: center;
+}
+input{
+  display:block;
+}
+#signin_ms{
+  margin-left:5%;
+  
+}
+.header{
+  display:grid;
+  place-content:center;
+  margin-bottom:0;
+}
+.input_field{
+  margin-top:10px;
+  height:3em;
+  width:250px;
+  border:0;
+  border-radius:10px;
+  outline:none;
+  padding-left:10px;
+  font-family: 'Rubik', sans-serif;
+}
+.loginbtn{
+  margin-top:10px;
+  font-family: 'Rubik', sans-serif;
+  font-size:1.3em;
+  width:260px;
+  height:2em;
+  border-radius:10px;
+  border:none;
+  background: #ff2f05;
+  color:white;
+  outline:none;
+}
+.input_field:hover{
+  color: #fabe7d;
+}
+.passbtn{
+  color:red;
+}

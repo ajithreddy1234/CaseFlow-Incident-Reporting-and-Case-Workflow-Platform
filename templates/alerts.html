@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alert System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    header {
+      position: sticky;
+      top: 0;
+      margin-bottom: 10px;
+      margin-top: -10px;
+      z-index: 2;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            destructive: '#ef4444',
+            'destructive-foreground': '#fff',
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-gray-50 text-gray-900 p-6 font-sans">
+
+  <!-- Header Include -->
+  {% include "Header.html" %}
+
+  <!-- Main Section -->
+  <main class="flex-1 w-full h-full px-6 py-4">
+    <div class="max-w-screen-xl mx-auto">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Alert System</h1>
+          <p class="text-gray-500 mb-6">Stay informed about important updates in your area</p>
+        </div>
+        {% if user.is_staff %}
+        <button onclick="document.getElementById('alertForm').classList.toggle('hidden')"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add Alert</button>
+        {% endif %}
+      </div>
+
+      <div class="flex space-x-2 mb-6">
+        <button class="tab-btn font-medium px-4 py-2 rounded bg-gray-300 font-semibold text-gray-800" data-tab="all">All Alerts</button>
+        <button class="tab-btn font-medium px-4 py-2 rounded bg-gray-100 text-gray-800" data-tab="critical">Critical</button>
+        <button class="tab-btn font-medium px-4 py-2 rounded bg-gray-100 text-gray-800" data-tab="warning">Warnings</button>
+        <button class="tab-btn font-medium px-4 py-2 rounded bg-gray-100 text-gray-800" data-tab="info">Information</button>
+      </div>
+
+      {% if user.is_staff %}
+      <form id="alertForm" method="POST" action="" class="hidden mb-6 p-4 border rounded bg-white space-y-4">
+        {% csrf_token %}
+        <input name="title" class="w-full p-2 border rounded" placeholder="Alert Title" required>
+        <input name="message" class="w-full p-2 border rounded" placeholder="Alert Message" required>
+        <input name="area" class="w-full p-2 border rounded" placeholder="Area" required>
+        <select name="severity" class="w-full p-2 border rounded">
+          <option value="info">Information</option>
+          <option value="warning">Warning</option>
+          <option value="critical">Critical</option>
+        </select>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Submit Alert</button>
+      </form>
+      {% endif %}
+
+      <div id="alertList" class="space-y-4">
+        {% for alert in alerts %}
+        <div class="alert-item border border-gray-200 p-4 rounded-xl flex items-start gap-4" data-severity="{{ alert.severity }}">
+          {% if alert.severity == 'info' %}
+          <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M13 16h-1v-4h-1m1-4h.01"></path>
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+          {% elif alert.severity == 'warning' %}
+          <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path
+              d="M12 9v2m0 4h.01M5.07 19h13.86a1 1 0 00.9-1.45l-6.93-13.8a1 1 0 00-1.8 0L4.17 17.55a1 1 0 00.9 1.45z">
+            </path>
+          </svg>
+          {% elif alert.severity == 'critical' %}
+          <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path
+              d="M12 9v2m0 4h.01M5.07 19h13.86a1 1 0 00.9-1.45l-6.93-13.8a1 1 0 00-1.8 0L4.17 17.55a1 1 0 00.9 1.45z">
+            </path>
+          </svg>
+          {% endif %}
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-semibold text-gray-900">{{ alert.title }}</h2>
+              <span
+                class="px-2 py-1 text-sm rounded-full text-white {% if alert.severity == 'info' %}bg-blue-500{% elif alert.severity == 'warning' %}bg-yellow-400{% else %}bg-red-500{% endif %}">{{alert.severity }}</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">{{ alert.message }}</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2 py-1 text-xs border rounded-full">{{ alert.area }}</span>
+              <span class="text-xs text-gray-500">{{ alert.created_at }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </main>
+
+  <!-- Tabs + Notifications -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const allAlerts = document.querySelectorAll(".alert-item");
+
+      function filterAlerts(severity) {
+        allAlerts.forEach(alert => {
+          if (severity === 'all' || alert.dataset.severity === severity) {
+            alert.classList.remove('hidden');
+          } else {
+            alert.classList.add('hidden');
+          }
+        });
+      }
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach(b => b.classList.remove("bg-gray-300", "font-semibold"));
+          btn.classList.add("bg-gray-300", "font-semibold");
+          const selectedSeverity = btn.dataset.tab;
+          filterAlerts(selectedSeverity);
+        });
+      });
+
+      filterAlerts('all');
+    });
+
+    // Notifications Logic
+    function toggleNotifications() {
+      const dropdown = document.getElementById("notificationDropdown");
+      dropdown.classList.toggle("hidden");
+      if (!dropdown.classList.contains("hidden")) {
+        loadNotifications();
+      }
+    }
+
+    function loadNotifications() {
+      fetch('/notifications/')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("notif-list");
+          const badge = document.getElementById("notif-count");
+          list.innerHTML = '';
+          let unread = 0;
+
+          if (data.notifications.length === 0) {
+            list.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+          }
+
+          data.notifications.forEach(n => {
+            const div = document.createElement('div');
+            div.className = `p-3 cursor-pointer hover:bg-gray-100 ${!n.is_read ? 'font-semibold' : ''}`;
+            div.innerHTML = `
+              <div class="text-sm">${n.title}</div>
+              <div class="text-xs text-gray-500">${n.message}</div>
+              <div class="text-[10px] text-gray-400 mt-1">${n.date}</div>
+            `;
+            div.onclick = () => markRead(n.id);
+            list.appendChild(div);
+            if (!n.is_read) unread++;
+          });
+
+          if (unread > 0) {
+            badge.textContent = unread;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        });
+    }
+
+    function markRead(id) {
+      fetch(`/notifications/read/${id}/`)
+        .then(() => loadNotifications());
+    }
+
+    function markAllRead() {
+      fetch(`/notifications/all-read/`)
+        .then(() => loadNotifications());
+    }
+
+    // Initial Badge Fetch
+    window.addEventListener("DOMContentLoaded", () => {
+      fetch('/notifications/')
+        .then(res => res.json())
+        .then(data => {
+          const badge = document.getElementById("notif-count");
+          if (data.unread_count > 0) {
+            badge.textContent = data.unread_count;
+            badge.classList.remove('hidden');
+          }
+        });
+    });
+  </script>
+</body>
+
+</html>
